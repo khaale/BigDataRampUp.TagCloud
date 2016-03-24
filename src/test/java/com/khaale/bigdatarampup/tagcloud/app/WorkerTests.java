@@ -41,6 +41,7 @@ public class WorkerTests {
         when(fsFacadeStub.readFile(any(String.class))).thenReturn(input);
 
         WebScraper webScraperMock = mock(WebScraper.class);
+        when(webScraperMock.getText(any(String.class))).thenReturn(Optional.empty());
 
         //act
         Worker sut = new Worker(fsFacadeStub, webScraperMock, mock(TagExtractor.class));
