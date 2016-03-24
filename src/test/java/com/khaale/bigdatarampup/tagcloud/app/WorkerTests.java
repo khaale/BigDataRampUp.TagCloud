@@ -4,6 +4,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
@@ -32,8 +33,8 @@ public class WorkerTests {
         //arrange
         final String inputFilePath = "data.txt";
         final String input =
-                "ID\tKeyword Value\tKeyword Status\tPricing Type\tKeyword Match Type\tDestination URL\n" +
-                "282163091263\t\tON\tCPC\tBROAD\thttp://www.leningrad-sbp.ru\n" +
+                "ID\tKeyword Value\tKeyword Status\tPricing Type\tKeyword Match Type\tDestination URL\r\n" +
+                "282163091263\t\tON\tCPC\tBROAD\thttp://www.leningrad-sbp.ru\r\n" +
                 "282163091263\t\tON\tCPC\tBROAD\thttp://www.example.com";
 
         FileSystemFacade fsFacadeStub = mock(FileSystemFacade.class);
@@ -63,7 +64,7 @@ public class WorkerTests {
         when(fsFacadeStub.readFile(any(String.class))).thenReturn(input);
 
         WebScraper webScraperStub = mock(WebScraper.class);
-        when(webScraperStub.getText(any(String.class))).thenReturn(text);
+        when(webScraperStub.getText(any(String.class))).thenReturn(Optional.of(text));
 
         TagExtractor tagExtractor = mock(TagExtractor.class);
 
@@ -93,7 +94,7 @@ public class WorkerTests {
         when(fsFacadeStub.readFile(any(String.class))).thenReturn(input);
 
         WebScraper webScraperStub = mock(WebScraper.class);
-        when(webScraperStub.getText(any(String.class))).thenReturn(text);
+        when(webScraperStub.getText(any(String.class))).thenReturn(Optional.of(text));
 
         TagExtractor tagExtractor = mock(TagExtractor.class);
         when(tagExtractor.getTags(any(String.class))).thenReturn(Arrays.asList("big","data"));

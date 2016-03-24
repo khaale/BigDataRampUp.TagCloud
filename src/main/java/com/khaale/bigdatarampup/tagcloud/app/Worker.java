@@ -1,6 +1,10 @@
 package com.khaale.bigdatarampup.tagcloud.app;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -9,8 +13,11 @@ import java.util.stream.Stream;
  */
 public class Worker {
 
+    private final static Logger logger = LoggerFactory.getLogger(Worker.class);
+
     private final static int KEYWORD_INDEX = 1;
     private final static int URL_INDEX = 5;
+    private final static String ERROR_MARK = "!ERROR";
 
     private FileSystemFacade fsFacade;
     private WebScraper webScraper;
@@ -29,13 +36,17 @@ public class Worker {
 
     public void fillKeywordValues(String inputFilePath) {
 
+        logger.info("Starting..");
+
         String inputText = fsFacade.readFile(inputFilePath);
 
         if (inputText == null || inputText.isEmpty()) {
+            logger.info("File is empty - exiting.");
             return;
         }
 
         String[] allLines = inputText.split("\\r?\\n");
+        logger.info("Read {} lines", allLines.length);
 
         Collection<String> filledRows = Stream.of(allLines)
                 .skip(1)
@@ -46,6 +57,8 @@ public class Worker {
         String outputText = String.join("\n", allLines[0], String.join("\n", filledRows));
 
         fsFacade.writeFile(inputFilePath + ".filled", outputText);
+
+        logger.info("Finished.");
     }
 
     private String fillKeywords(String row) {
@@ -53,11 +66,18 @@ public class Worker {
         String[] fields = row.split("\\t");
         String url = fields[URL_INDEX];
 
-        String text = webScraper.getText(url);
+        logger.info("Processing {}", url);
 
-        Collection<String> tags = tagExtractor.getTags(text);
+        Optional<String> text = webScraper.getText(url);
 
-        fields[KEYWORD_INDEX] = String.join(",", tags);
+        if (text.isPresent()) {
+            Collection<String> tags = tagExtractor.getTags(text.get());
+            fields[KEYWORD_INDEX] = String.join(",", tags);
+        }
+        else {
+            fields[KEYWORD_INDEX] = ERROR_MARK;
+        }
+        logger.info("Extracted tags: {}", fields[KEYWORD_INDEX]);
 
         return String.join("\t", (CharSequence[]) fields);
     }

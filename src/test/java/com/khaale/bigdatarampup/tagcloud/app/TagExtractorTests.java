@@ -48,4 +48,30 @@ public class TagExtractorTests {
         assertNotNull(actual);
         assertEquals(10, actual.size());
     }
+
+    @Test
+    public void getTags_shouldExclude1LetterWords() {
+        //arrange
+        String text = "a b c";
+        //act
+        TagExtractor sut = new TagExtractor();
+        Collection<String> actual = sut.getTags(text);
+
+        //assert
+        assertNotNull(actual);
+        assertEquals(0, actual.size());
+    }
+
+    @Test
+    public void getTags_shouldExcludeStopWords() {
+        //arrange
+        String text = "the about with";
+        //act
+        TagExtractor sut = new TagExtractor();
+        Collection<String> actual = sut.getTags(text);
+
+        //assert
+        assertNotNull(actual);
+        assertEquals(0, actual.size());
+    }
 }

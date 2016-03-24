@@ -1,5 +1,10 @@
 package com.khaale.bigdatarampup.tagcloud.app;
 
+import com.google.common.io.Resources;
+import org.apache.commons.io.Charsets;
+
+import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -10,16 +15,22 @@ import java.util.stream.Stream;
  */
 public class TagExtractor {
 
-    private static Set<String> stopWords = new HashSet<>(Arrays.asList(
-            "usd",
-            "to",
-            "the",
-            "a",
-            "for",
-            "in",
-            "all",
-            "your"
-    ));
+    private Set<String> stopWords;
+
+    public TagExtractor() {
+
+        URL url = Resources.getResource("stopwords.txt");
+        try {
+            String text = Resources.toString(url, Charsets.UTF_8);
+
+            stopWords = Stream.of(text.split("\\r?\\n")).collect(Collectors.toSet());
+
+        } catch (IOException e) {
+            stopWords = new HashSet<>();
+            e.printStackTrace();
+        }
+
+    }
 
     public Collection<String> getTags(String text) {
 
@@ -37,7 +48,7 @@ public class TagExtractor {
                 Stream.of(clean.split(" "))
                         .map(String::toLowerCase)
                         //it doesn't make sense to use small stop-words dictionary there
-                        //.filter(s -> !stopWords.contains(s))
+                        .filter(this::filterWord)
                         .collect(Collectors.groupingBy(Function.identity(), Collectors.<String>counting()));
 
         return grouped.entrySet().stream()
@@ -45,7 +56,21 @@ public class TagExtractor {
                 .map(Map.Entry::getKey)
                 .limit(10)
                 .collect(Collectors.toList());
+    }
 
+    private boolean filterWord(String word) {
+
+        boolean result = true;
+
+        if (word.length() <= 1) {
+            result = false;
+        }
+
+        if (stopWords.contains(word)) {
+            result = false;
+        }
+
+        return result;
 
     }
 }
