@@ -7,6 +7,7 @@ import org.apache.hadoop.fs.Path;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.Optional;
 
 public class FileSystemFacade {
 
@@ -20,6 +21,14 @@ public class FileSystemFacade {
     }
 
     public String readFile(String path) {
+        return readFile(path, 0, Optional.empty());
+    }
+
+    public String readFile(String path, int skipLines, int limitLines) {
+        return readFile(path, skipLines, Optional.of(limitLines));
+    }
+
+    public String readFile(String path, Integer skipLines, Optional<Integer> limitLines) {
         try{
             FileSystem fs =  FileSystem.get(conf);
             Path hdpPath = new Path(path);
@@ -28,11 +37,36 @@ public class FileSystemFacade {
 
             StringBuilder sb = new StringBuilder();
             String line;
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
-                sb.append(System.lineSeparator());
+            int lineIndex = 0;
+            while ((line = br.readLine()) != null && (!limitLines.isPresent() || (lineIndex < skipLines + limitLines.get()))) {
+
+                if (lineIndex >= skipLines) {
+                    sb.append(line);
+                    sb.append(System.lineSeparator());
+                }
+
+                lineIndex++;
             }
             return sb.toString();
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public int getLinesCount(String path) {
+        try{
+            FileSystem fs =  FileSystem.get(conf);
+            Path hdpPath = new Path(path);
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(fs.open(hdpPath)));
+
+            int lineIndex = 0;
+            while (br.readLine() != null) {
+
+                lineIndex++;
+            }
+            return lineIndex;
         }
         catch (Exception e) {
             throw new RuntimeException(e);
@@ -56,6 +90,35 @@ public class FileSystemFacade {
         catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
 
+    public void appendToFile(String path, String content) {
+        try{
+            FileSystem fs =  FileSystem.get(conf);
+            Path hdpPath = new Path(path);
+
+            byte[] buffer = content.getBytes("UTF-8");
+            FSDataOutputStream fin = fs.append(hdpPath, buffer.length);
+            fin.write(buffer);
+            fin.close();
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void removeFile(String path) {
+        try{
+            FileSystem fs =  FileSystem.get(conf);
+            Path hdpPath = new Path(path);
+
+            if (fs.exists(hdpPath))
+            {
+                fs.delete(hdpPath, true);
+            }
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

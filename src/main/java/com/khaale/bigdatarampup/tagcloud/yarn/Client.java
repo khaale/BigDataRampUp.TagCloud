@@ -31,13 +31,18 @@ import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.util.Apps;
 import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class Client {
 
-    Configuration conf = new YarnConfiguration();
+    private final static Logger logger = LoggerFactory.getLogger(Client.class);
 
     public void run(String[] args) throws Exception {
+
+        logger.info("Starting ..");
+
         final String command = args[0];
         final int n = Integer.valueOf(args[1]);
         final Path jarPath = new Path(args[2]);
@@ -52,40 +57,37 @@ public class Client {
         YarnClientApplication app = yarnClient.createApplication();
 
         // Set up the container launch context for the application master
+        ContainerSetupUtils setup = new ContainerSetupUtils(conf);
+
         ContainerLaunchContext amContainer =
                 Records.newRecord(ContainerLaunchContext.class);
+        String containerCommand = setup.getClassExecuteCommand(ApplicationMaster.class, command, String.valueOf(n), args[2]);
+        logger.info("Container command: {}", containerCommand);
+
         amContainer.setCommands(
-                Collections.singletonList(
-                        "$JAVA_HOME/bin/java" +
-                                " -Xmx256M" +
-                                " com.hortonworks.simpleyarnapp.ApplicationMaster" +
-                                " " + command +
-                                " " + String.valueOf(n) +
-                                " 1>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stdout" +
-                                " 2>" + ApplicationConstants.LOG_DIR_EXPANSION_VAR + "/stderr"
-                )
+                Collections.singletonList(containerCommand)
         );
 
         // Setup jar for ApplicationMaster
         LocalResource appMasterJar = Records.newRecord(LocalResource.class);
-        setupAppMasterJar(jarPath, appMasterJar);
+        setup.setupJarResource(jarPath, appMasterJar);
         amContainer.setLocalResources(
-                Collections.singletonMap("simpleapp.jar", appMasterJar));
+                Collections.singletonMap("tagcloud.jar", appMasterJar));
 
         // Setup CLASSPATH for ApplicationMaster
         Map<String, String> appMasterEnv = new HashMap<>();
-        setupAppMasterEnv(appMasterEnv);
+        setup.setupJarEnv(appMasterEnv);
         amContainer.setEnvironment(appMasterEnv);
 
         // Set up resource type requirements for ApplicationMaster
         Resource capability = Records.newRecord(Resource.class);
-        capability.setMemory(256);
+        capability.setMemory(128);
         capability.setVirtualCores(1);
 
         // Finally, set-up ApplicationSubmissionContext for the application
         ApplicationSubmissionContext appContext =
                 app.getApplicationSubmissionContext();
-        appContext.setApplicationName("simple-yarn-app"); // application name
+        appContext.setApplicationName("tagcloud"); // application name
         appContext.setAMContainerSpec(amContainer);
         appContext.setResource(capability);
         appContext.setQueue("default"); // queue
@@ -110,27 +112,6 @@ public class Client {
                         " state " + appState +
                         " at " + appReport.getFinishTime());
 
-    }
-
-    private void setupAppMasterJar(Path jarPath, LocalResource appMasterJar) throws IOException {
-        FileStatus jarStat = FileSystem.get(conf).getFileStatus(jarPath);
-        appMasterJar.setResource(ConverterUtils.getYarnUrlFromPath(jarPath));
-        appMasterJar.setSize(jarStat.getLen());
-        appMasterJar.setTimestamp(jarStat.getModificationTime());
-        appMasterJar.setType(LocalResourceType.FILE);
-        appMasterJar.setVisibility(LocalResourceVisibility.PUBLIC);
-    }
-
-    private void setupAppMasterEnv(Map<String, String> appMasterEnv) {
-        for (String c : conf.getStrings(
-                YarnConfiguration.YARN_APPLICATION_CLASSPATH,
-                YarnConfiguration.DEFAULT_YARN_APPLICATION_CLASSPATH)) {
-            Apps.addToEnvironment(appMasterEnv, Environment.CLASSPATH.name(),
-                    c.trim());
-        }
-        Apps.addToEnvironment(appMasterEnv,
-                Environment.CLASSPATH.name(),
-                Environment.PWD.$() + File.separator + "*");
     }
 
     public static void main(String[] args) throws Exception {

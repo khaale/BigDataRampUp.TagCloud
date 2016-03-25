@@ -1,7 +1,9 @@
 package com.khaale.bigdatarampup.tagcloud.integrationtests;
 
-import com.khaale.bigdatarampup.tagcloud.app.WebScraper;
+import com.khaale.bigdatarampup.tagcloud.app.WebPageContentExtractor;
 import java.util.Optional;
+
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -11,8 +13,8 @@ import static org.junit.Assert.*;
 /**
  * Created by Aleksander on 22.03.2016.
  */
-@Category(IntegrationTest.class)
-public class WebScraperTests {
+@Ignore
+public class WebPageContentExtractorTests {
 
     @Test
     public void getText_shouldReturnNonEmptyString_WhenCalledWithValidUrl() {
@@ -20,8 +22,8 @@ public class WebScraperTests {
         String url = "http://www.miniinthebox.com/12v-24v-digital-led-auto-car-truck-voltmeter-gauge_p284486.html";
 
         //act
-        WebScraper sut = new WebScraper();
-        Optional<String> actual = sut.getText(url);
+        WebPageContentExtractor sut = new WebPageContentExtractor();
+        Optional<String> actual = sut.getContent(url);
 
         //assert
         assertTrue(actual.isPresent());
@@ -34,8 +36,8 @@ public class WebScraperTests {
         String url = "http://www.miniinthebox.com/hope-there-is-no-such-page";
 
         //act
-        WebScraper sut = new WebScraper();
-        Optional<String> actual = sut.getText(url);
+        WebPageContentExtractor sut = new WebPageContentExtractor();
+        Optional<String> actual = sut.getContent(url);
 
         //assert
         assertFalse(actual.isPresent());
@@ -47,8 +49,8 @@ public class WebScraperTests {
         String url = "http://localhost:123";
 
         //act
-        WebScraper sut = new WebScraper();
-        Optional<String> actual = sut.getText(url);
+        WebPageContentExtractor sut = new WebPageContentExtractor();
+        Optional<String> actual = sut.getContent(url);
 
         //assert
         assertFalse(actual.isPresent());

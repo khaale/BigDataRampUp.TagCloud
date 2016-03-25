@@ -20,25 +20,37 @@ public class Worker {
     private final static String ERROR_MARK = "!ERROR";
 
     private FileSystemFacade fsFacade;
-    private WebScraper webScraper;
+    private ContentExtractor contentExtractor;
     private TagExtractor tagExtractor;
 
     public Worker(
             FileSystemFacade fsFacade,
-            WebScraper webScraper,
+            ContentExtractor contentExtractor,
             TagExtractor tagExtractor) {
 
 
         this.fsFacade = fsFacade;
-        this.webScraper = webScraper;
+        this.contentExtractor = contentExtractor;
         this.tagExtractor = tagExtractor;
     }
 
     public void fillKeywordValues(String inputFilePath) {
 
+        fillKeywordValues(
+                inputFilePath,
+                inputFilePath + ".out",
+                Optional.empty(),
+                Optional.empty());
+    }
+
+    public void fillKeywordValues(String inputFilePath, String outputFilePath, Optional<Integer> skipRecords, Optional<Integer> limitRecords) {
+
         logger.info("Starting..");
 
-        String inputText = fsFacade.readFile(inputFilePath);
+        String inputText = fsFacade.readFile(
+                inputFilePath,
+                skipRecords.orElse(1),
+                limitRecords.orElse(fsFacade.getLinesCount(inputFilePath) - 1));
 
         if (inputText == null || inputText.isEmpty()) {
             logger.info("File is empty - exiting.");
@@ -48,15 +60,16 @@ public class Worker {
         String[] allLines = inputText.split("\\r?\\n");
         logger.info("Read {} lines", allLines.length);
 
-        Collection<String> filledRows = Stream.of(allLines)
-                .skip(1)
+        Collection<String> filledRows =
+        Stream.of(allLines)
                 .filter(line -> !line.isEmpty())
                 .map(this::fillKeywords)
                 .collect(Collectors.toList());
 
-        String outputText = String.join("\n", allLines[0], String.join("\n", filledRows));
-
-        fsFacade.writeFile(inputFilePath + ".filled", outputText);
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.join("\n", String.join(System.lineSeparator(), filledRows)));
+        sb.append(System.lineSeparator());
+        fsFacade.writeFile(outputFilePath, sb.toString());
 
         logger.info("Finished.");
     }
@@ -68,7 +81,7 @@ public class Worker {
 
         logger.info("Processing {}", url);
 
-        Optional<String> text = webScraper.getText(url);
+        Optional<String> text = contentExtractor.getContent(url);
 
         if (text.isPresent()) {
             Collection<String> tags = tagExtractor.getTags(text.get());

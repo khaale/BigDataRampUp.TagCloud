@@ -1,6 +1,5 @@
 package com.khaale.bigdatarampup.tagcloud.app;
 
-import org.apache.commons.httpclient.HttpException;
 import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
@@ -9,20 +8,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
+import java.net.URL;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * Created by Aleksander on 22.03.2016.
- */
-public class WebScraper {
+public class WebPageContentExtractor implements ContentExtractor {
 
     private final static int MAX_RETRY_COUNT = 3;
-    private final static Logger logger = LoggerFactory.getLogger(WebScraper.class);
+    private final static Logger logger = LoggerFactory.getLogger(WebPageContentExtractor.class);
 
-    public Optional<String> getText(String url) {
+    public Optional<String> getContent(String url) {
 
         Optional<String> result = Optional.empty();
         boolean needRetry;
