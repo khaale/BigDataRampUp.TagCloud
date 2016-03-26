@@ -1,9 +1,5 @@
 package com.khaale.bigdatarampup.tagcloud.yarn;
 
-/**
- * Created by Aleksander on 23.03.2016.
- */
-
 import java.io.IOException;
 import java.util.*;
 
@@ -20,6 +16,10 @@ import org.apache.hadoop.yarn.util.Records;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * YARN Application Master.
+ * Performs containers launching and results collection.
+ */
 public class ApplicationMaster {
 
     private final static Logger logger = LoggerFactory.getLogger(ApplicationMaster.class);
@@ -33,14 +33,13 @@ public class ApplicationMaster {
         appMaster.run(args);
     }
 
-    public void run(String[] args) throws Exception {
+    private void run(String[] args) throws Exception {
 
         final String inputFilePath = args[0];
         final int n = Integer.valueOf(args[1]);
         final String jarPath = args[2];
 
         // Initialize clients to ResourceManager and NodeManagers
-
         AMRMClient<ContainerRequest> rmClient = AMRMClient.createAMRMClient();
         rmClient.init(conf);
         rmClient.start();
@@ -71,12 +70,10 @@ public class ApplicationMaster {
         }
 
         // Obtain allocated containers, launch and check for responses
-
         int responseId = 0;
         int completedContainers = 0;
         List<ContainerParameters> launchedContainerParams = new ArrayList<>();
         Queue<ContainerParameters> containerParams = new LinkedList<>(prepareArguments(inputFilePath, n));
-
         while (completedContainers < n) {
 
             AllocateResponse response = rmClient.allocate(responseId++);
@@ -90,18 +87,19 @@ public class ApplicationMaster {
 
                 // Launch container by create ContainerLaunchContext
                 ContainerLaunchContext ctx = getContainerLaunchContext(conf, jarPath, params);
-                logger.info("Launching container " + container.getId());
+                logger.info("Launching container {}", container.getId());
                 nmClient.startContainer(container, ctx);
 
                 launchedContainerParams.add(params);
             }
             for (ContainerStatus status : response.getCompletedContainersStatuses()) {
                 ++completedContainers;
-                System.out.println("Completed container " + status.getContainerId());
+                logger.info("Completed container {}", status.getContainerId());
             }
             Thread.sleep(100);
         }
 
+        // Collect container's output files to the single file.
         collectContainersOutput(inputFilePath, launchedContainerParams);
 
         // Un-register with ResourceManager
@@ -129,17 +127,17 @@ public class ApplicationMaster {
 
     private ContainerLaunchContext getContainerLaunchContext(Configuration conf, String jarPath, ContainerParameters containerParameters) throws IOException {
 
-        ContainerSetupUtils setup = new ContainerSetupUtils(conf);
+        YarnSetupUtils setup = new YarnSetupUtils(conf);
         ContainerLaunchContext ctx =
                 Records.newRecord(ContainerLaunchContext.class);
 
-        // Setup jar for ContainerMaster
+        // Setup jar for ContainerWorker
         LocalResource appMasterJar = Records.newRecord(LocalResource.class);
         setup.setupJarResource(new Path(jarPath), appMasterJar);
         ctx.setLocalResources(
                 Collections.singletonMap("tagcloud.jar", appMasterJar));
 
-        // Setup CLASSPATH for ContainerMaster
+        // Setup CLASSPATH for ContainerWorker
         Map<String, String> env = new HashMap<>();
         setup.setupJarEnv(env);
         ctx.setEnvironment(env);
@@ -147,7 +145,7 @@ public class ApplicationMaster {
         ctx.setCommands(
                 Collections.singletonList(
                         setup.getClassExecuteCommand(
-                                ContainerMaster.class,
+                                ContainerWorker.class,
                                 containerParameters.toArgs())
                 )
         );

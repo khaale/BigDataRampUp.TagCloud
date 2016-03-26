@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Created by Aleksander on 24.03.2016.
+ * Performs keywords extraction and saving.
  */
 public class Worker {
 
@@ -19,9 +19,9 @@ public class Worker {
     private final static int URL_INDEX = 5;
     private final static String ERROR_MARK = "!ERROR";
 
-    private FileSystemFacade fsFacade;
-    private ContentExtractor contentExtractor;
-    private TagExtractor tagExtractor;
+    private final FileSystemFacade fsFacade;
+    private final ContentExtractor contentExtractor;
+    private final TagExtractor tagExtractor;
 
     public Worker(
             FileSystemFacade fsFacade,
@@ -43,48 +43,56 @@ public class Worker {
                 Optional.empty());
     }
 
-    public void fillKeywordValues(String inputFilePath, String outputFilePath, Optional<Integer> skipRecords, Optional<Integer> limitRecords) {
+    /**
+     * Gets keywords by URL's in input file, saves them to output file.
+     * Supports partial input file processing.
+     * @param inputFilePath hdfs path to input file
+     * @param outputFilePath hdfs path to output file
+     * @param skipLines how much lines should be skipped in input file. 1 record (header) if not specified.
+     * @param limitLines how much lines should be taken from input file. All records - 1(header) if not specified.
+     */
+    public void fillKeywordValues(String inputFilePath, String outputFilePath, Optional<Integer> skipLines, Optional<Integer> limitLines) {
 
         logger.info("Starting..");
 
-        String inputText = fsFacade.readFile(
+        final String inputText = fsFacade.readFile(
                 inputFilePath,
-                skipRecords.orElse(1),
-                limitRecords.orElse(fsFacade.getLinesCount(inputFilePath) - 1));
+                skipLines.orElse(1),
+                limitLines.orElse(fsFacade.getLinesCount(inputFilePath) - 1));
 
         if (inputText == null || inputText.isEmpty()) {
             logger.info("File is empty - exiting.");
             return;
         }
 
-        String[] allLines = inputText.split("\\r?\\n");
+        final String[] allLines = inputText.split("\\r?\\n");
         logger.info("Read {} lines", allLines.length);
 
-        Collection<String> filledRows =
+        final Collection<String> filledRows =
         Stream.of(allLines)
                 .filter(line -> !line.isEmpty())
                 .map(this::fillKeywords)
                 .collect(Collectors.toList());
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.join("\n", String.join(System.lineSeparator(), filledRows)));
-        sb.append(System.lineSeparator());
-        fsFacade.writeFile(outputFilePath, sb.toString());
+        final String result =
+                String.join("\n", String.join(System.lineSeparator(), filledRows)) +
+                System.lineSeparator();
+        fsFacade.writeFile(outputFilePath, result);
 
         logger.info("Finished.");
     }
 
     private String fillKeywords(String row) {
 
-        String[] fields = row.split("\\t");
-        String url = fields[URL_INDEX];
+        final String[] fields = row.split("\\t");
+        final String url = fields[URL_INDEX];
 
         logger.info("Processing {}", url);
 
-        Optional<String> text = contentExtractor.getContent(url);
+        final Optional<String> text = contentExtractor.getContent(url);
 
         if (text.isPresent()) {
-            Collection<String> tags = tagExtractor.getTags(text.get());
+            final Collection<String> tags = tagExtractor.getTags(text.get());
             fields[KEYWORD_INDEX] = String.join(",", tags);
         }
         else {

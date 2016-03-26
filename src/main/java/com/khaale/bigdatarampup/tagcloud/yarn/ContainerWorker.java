@@ -10,12 +10,13 @@ import org.slf4j.LoggerFactory;
 import java.util.Optional;
 
 /**
- * Created by Aleksander_Khanteev on 3/25/2016.
+ * YARN Container Worker.
+ * Runs keyword processing with given parameters.
  */
-public class ContainerMaster {
+public class ContainerWorker {
 
 
-    private final static Logger logger = LoggerFactory.getLogger(ContainerMaster.class);
+    private final static Logger logger = LoggerFactory.getLogger(ContainerWorker.class);
 
     public static void main(String[] args) {
 

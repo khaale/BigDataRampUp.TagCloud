@@ -15,6 +15,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Extracts tags source content from web page.
+ * Uses Jsoup for HTML parsing.
+ */
 public class WebPageContentExtractor implements ContentExtractor {
 
     private final static int MAX_RETRY_COUNT = 3;
@@ -57,8 +61,6 @@ public class WebPageContentExtractor implements ContentExtractor {
         String result;Connection connection = Jsoup.connect(url);
         connection.timeout(5 * 1000);
         Document doc = connection.get();
-        //Element title = doc.select("div.widget.prod-info-title h1").first();
-        //return title.text();
 
         Stream<String> lines =
                 Stream.of(doc.text()

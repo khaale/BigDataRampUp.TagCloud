@@ -9,6 +9,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.Optional;
 
+/**
+ *  Provides facade for HDFS operations.
+ */
 public class FileSystemFacade {
 
     private Configuration conf;

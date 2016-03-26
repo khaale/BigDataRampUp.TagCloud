@@ -4,6 +4,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
 
+/**
+ * Extracts tags source content directly from URL path.
+ * Performs some basic cleanup like stripping _c124312.html postfixes.
+ */
 public class UrlContentExtractor implements ContentExtractor {
 
     @Override
