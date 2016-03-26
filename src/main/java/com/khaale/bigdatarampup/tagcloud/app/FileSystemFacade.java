@@ -17,7 +17,7 @@ import java.util.Optional;
  */
 public class FileSystemFacade {
 
-    private Configuration conf;
+    private final Configuration conf;
 
     public FileSystemFacade() {
 

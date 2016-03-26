@@ -11,7 +11,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Created by Aleksander on 22.03.2016.
+ * Extracts tags from given text.
+ * Performs word normalizing, excludes stop words and numbers.
  */
 public class TagExtractor {
 

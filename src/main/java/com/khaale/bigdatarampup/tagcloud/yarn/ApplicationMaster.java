@@ -25,8 +25,8 @@ public class ApplicationMaster {
 
     private final static Logger logger = LoggerFactory.getLogger(ApplicationMaster.class);
 
-    FileSystemFacade fs = new FileSystemFacade();
-    Configuration conf = new YarnConfiguration();
+    final FileSystemFacade fs = new FileSystemFacade();
+    final Configuration conf = new YarnConfiguration();
 
     public static void main(String[] args) throws Exception {
 

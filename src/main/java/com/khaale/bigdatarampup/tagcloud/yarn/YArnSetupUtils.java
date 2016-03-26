@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public class YarnSetupUtils {
 
-    private Configuration conf;
+    private final Configuration conf;
 
     public YarnSetupUtils(Configuration conf) {
 
