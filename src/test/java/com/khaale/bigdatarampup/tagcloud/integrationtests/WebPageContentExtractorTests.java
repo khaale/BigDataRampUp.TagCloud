@@ -3,17 +3,16 @@ package com.khaale.bigdatarampup.tagcloud.integrationtests;
 import com.khaale.bigdatarampup.tagcloud.app.WebPageContentExtractor;
 import java.util.Optional;
 
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.*;
 
 
 /**
+ *
  * Created by Aleksander on 22.03.2016.
+ *
  */
-@Ignore
 public class WebPageContentExtractorTests {
 
     @Test

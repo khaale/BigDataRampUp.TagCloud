@@ -8,7 +8,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
+ *
  * Created by Aleksander on 22.03.2016.
+ *
  */
 public class TagExtractorTests {
 

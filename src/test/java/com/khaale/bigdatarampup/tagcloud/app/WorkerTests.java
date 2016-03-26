@@ -8,7 +8,9 @@ import java.util.Optional;
 import static org.mockito.Mockito.*;
 
 /**
+ *
  * Created by Aleksander on 24.03.2016.
+ *
  */
 public class WorkerTests {
 

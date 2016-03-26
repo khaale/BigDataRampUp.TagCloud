@@ -7,7 +7,9 @@ import java.util.Optional;
 import static org.junit.Assert.assertEquals;
 
 /**
+ *
  * Created by Aleksander_Khanteev on 3/25/2016.
+ *
  */
 public class UrlContentExtractorTests {
 

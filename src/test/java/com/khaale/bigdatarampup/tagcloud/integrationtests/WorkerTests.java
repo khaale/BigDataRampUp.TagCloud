@@ -3,7 +3,6 @@ package com.khaale.bigdatarampup.tagcloud.integrationtests;
 import com.khaale.bigdatarampup.tagcloud.app.*;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 public class WorkerTests {
 

@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ *
  * Created by Aleksander_Khanteev on 3/25/2016.
+ *
  */
 public class ContainerParameters {
 
