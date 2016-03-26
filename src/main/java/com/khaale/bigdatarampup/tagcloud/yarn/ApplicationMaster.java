@@ -2,6 +2,7 @@ package com.khaale.bigdatarampup.tagcloud.yarn;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.khaale.bigdatarampup.tagcloud.app.FileSystemFacade;
 import org.apache.hadoop.conf.Configuration;
@@ -112,17 +113,13 @@ public class ApplicationMaster {
         String collectedFilePath = inputFilePath + ".out";
         logger.info("Collecting container's output to {}", collectedFilePath);
 
-        fs.removeFile(collectedFilePath);
-
         String header = fs.readFile(inputFilePath, 0, 1);
-        fs.writeFile(collectedFilePath, header);
+        Collection<String> filesToCollect = containerParams.stream()
+                .map(ContainerParameters::getOutputFileName)
+                .peek(path -> logger.info("Appending data from {}", path))
+                .collect(Collectors.toList());
 
-        for(ContainerParameters params : containerParams) {
-
-            logger.info("Appending data from {}",params.getOutputFileName());
-            String content = fs.readFile(params.getOutputFileName());
-            fs.appendToFile(collectedFilePath, content);
-        }
+        fs.collectFiles(filesToCollect, collectedFilePath, Optional.of(header));
     }
 
     private ContainerLaunchContext getContainerLaunchContext(Configuration conf, String jarPath, ContainerParameters containerParameters) throws IOException {

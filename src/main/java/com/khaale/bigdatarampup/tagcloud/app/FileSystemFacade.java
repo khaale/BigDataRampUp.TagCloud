@@ -1,12 +1,15 @@
 package com.khaale.bigdatarampup.tagcloud.app;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IOUtils;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.Collection;
 import java.util.Optional;
 
 /**
@@ -118,6 +121,40 @@ public class FileSystemFacade {
             if (fs.exists(hdpPath))
             {
                 fs.delete(hdpPath, true);
+            }
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Collect given files to the single file.
+     * @param filePathsToCollect input files
+     * @param outputFilePath output file
+     * @param header prepends header if specified.
+     */
+    public void collectFiles(Collection<String> filePathsToCollect, String outputFilePath, Optional<String> header) {
+        try{
+            FileSystem fs =  FileSystem.get(conf);
+            Path out = new Path(outputFilePath);
+
+            if (fs.exists(out))
+            {
+                fs.delete(out, true);
+            }
+
+            try(FSDataOutputStream outputStream = fs.create(out)) {
+
+                if (header.isPresent()) {
+                    outputStream.write(header.get().getBytes("UTF-8"));
+                }
+                for (String inPath : filePathsToCollect) {
+
+                    try(FSDataInputStream inputStream = fs.open(new Path(inPath))) {
+                        IOUtils.copyBytes(inputStream, outputStream, 4096, false);
+                    }
+                }
             }
         }
         catch (Exception e) {

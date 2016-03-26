@@ -1,6 +1,7 @@
 package com.khaale.bigdatarampup.tagcloud.integrationtests;
 
 import com.khaale.bigdatarampup.tagcloud.app.FileSystemFacade;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -42,6 +43,7 @@ public class FileSystemFacadeTests {
     }
 
     @Test
+    @Ignore("Requires specific hdfs settings.")
     public void appendToFile_shouldAppend() {
         //arrange
         String hadoopFilePath =  "/data/tagcloud/test/append_test.txt";
