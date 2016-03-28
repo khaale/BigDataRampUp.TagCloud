@@ -12,7 +12,7 @@ hadoop jar ./target/tagcloud-1.0-SNAPSHOT-jar-with-dependencies.jar  com.khaale.
 ## How does it work
 
 1. _Client_ submits _ApplicationMaster_ to YARN
-2. _ApplicationMaster_ gets a number of records from input file and generates container parameters. For example for 2 containerhs and 500-lines file the following parameters will be generated:
+2. _ApplicationMaster_ gets a number of records from input file and generates container parameters. For example, with 2 containers and 500-lines input file, the following parameters will be generated:
   - 1st container: skip 1 line (header), read 249 lines.
   - 2nd container: skip 250 lines, read 250 lines.
 3. _ApplicationMaster_ launches _ContainerWorker_'s and waits for completion.
