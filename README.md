@@ -1,5 +1,5 @@
 # BigDataRumpUp.TagCloud
-Big Data Rump Up training - 1st task - YARN app
+Big Data Rump Up training, 2nd homework: TagCloud YARN app
 
 ## How to run
 
