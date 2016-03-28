@@ -5,8 +5,8 @@ Big Data Rump Up training - 1st task - YARN app
 
 ```bash
 mvn package
-hadoop fs -copyFromLocal tagcloud-1.0-SNAPSHOT-jar-with-dependencies.jar /apps/tagcloud/tagcloud-1.0-SNAPSHOT-jar-with-dependencies.jar
-hadoop jar tagcloud-1.0-SNAPSHOT-jar-with-dependencies.jar com.khaale.bigdatarampup.tagcloud.yarn.Client /data/tagcloud/user.preferences.us.txt 2 /apps/tagcloud/tagcloud-1.0-SNAPSHOT-jar-with-dependencies.jar
+hadoop fs -copyFromLocal -f ./target/tagcloud-1.0-SNAPSHOT-jar-with-dependencies.jar /apps/tagcloud/tagcloud.jar
+hadoop jar ./target/tagcloud-1.0-SNAPSHOT-jar-with-dependencies.jar  com.khaale.bigdatarampup.tagcloud.yarn.Client /data/tagcloud/prod/user.profile.tags.us.txt 2 hdfs:///apps/tagcloud/tagcloud.jar
 ```
 
 ## How does it work
